@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Daily Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --home:#BA7517;--home-bg:#FDF6EB;--home-bd:#FAC775;
+  --kids:#D4537E;--kids-bg:#FDF0F4;--kids-bd:#ED93B1;
+  --courses:#0F6E56;--courses-bg:#EEFAF5;--courses-bd:#9FE1CB;
+  --research:#534AB7;--research-bg:#F3F2FE;--research-bd:#AFA9EC;
+  --bg:#FAF8F4;--card:#FFFFFF;--tx:#1C1917;--mu:#9E958E;
+  --bd:#E8E4DC;--bdl:#F0EDE8;--r:14px;
+  --sab:env(safe-area-inset-bottom,0px);
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;padding:1.5rem 1rem calc(1.5rem + var(--sab));-webkit-tap-highlight-color:transparent}
+.ctr{max-width:600px;margin:0 auto}
+
+/* ── Header ── */
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.75rem}
+.day{font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--mu)}
+h1{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,6vw,2.3rem);font-weight:600;line-height:1.15}
+.sum{font-size:13px;color:var(--mu);margin-top:.35rem}
+.hdr-btns{display:flex;gap:6px;margin-top:4px}
+.ib{background:var(--card);border:.5px solid var(--bd);border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--mu);flex-shrink:0}
+.ib:active{border-color:var(--courses);color:var(--courses)}
+
+/* ── Sync badge ── */
+.sync-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mu);margin-top:.4rem}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#D0CCC6;flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:var(--courses)}
+.sync-dot.err{background:#E24B4A}
+.sync-dot.ing{background:var(--home);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Settings ── */
+.stg{background:var(--card);border:.5px solid var(--bd);border-radius:var(--r);padding:1.15rem;margin-bottom:1.5rem;display:none}
+.stg.open{display:block}
+.stg p{font-size:12px;color:var(--mu);line-height:1.5;margin-bottom:.65rem}
+.stg a{color:var(--courses)}
+.fl{display:block;font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#7A756F;margin-bottom:5px;margin-top:12px}
+.fl:first-of-type{margin-top:0}
+.fi{width:100%;border:.5px solid #D5CFC9;border-radius:10px;padding:11px 12px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);color:var(--tx);outline:none}
+.fi:focus{border-color:var(--courses)}
+.sv{margin-top:14px;background:var(--courses);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:'DM Sans';font-size:13px;font-weight:500;cursor:pointer;width:100%}
+
+/* ── Input zone ── */
+.iz{background:var(--card);border:.5px solid var(--bd);border-radius:18px;padding:1.35rem 1.15rem;margin-bottom:1.75rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.br{display:flex;gap:12px;align-items:center}
+.mw{position:relative}
+.mr{position:absolute;inset:-7px;border-radius:50%;border:2.5px solid transparent;pointer-events:none;transition:border-color .3s}
+.mr.on{border-color:var(--courses-bd);animation:rp 1.4s ease-in-out infinite}
+@keyframes rp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.4}}
+.mb{width:64px;height:64px;border-radius:50%;border:none;background:var(--courses);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .1s;position:relative;z-index:1}
+.mb:active{transform:scale(.94)}
+.mb.rec{background:#993C1D}
+.mb svg{width:26px;height:26px}
+.mb .ss{display:none}
+.mb.rec .ms{display:none}
+.mb.rec .ss{display:block}
+.ub{width:50px;height:50px;border-radius:50%;border:.5px solid var(--bd);background:var(--card);color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ub:active{border-color:var(--courses);color:var(--courses)}
+.ub svg{width:20px;height:20px}
+input[type="file"]{display:none}
+.ta{width:100%;background:var(--bg);border-radius:10px;padding:.8rem .9rem;font-size:14px;color:#6B6560;font-style:italic;line-height:1.5;border:.5px solid var(--bdl);display:none;min-height:48px}
+.ta.v{display:block}
+audio.ap{width:100%;display:none;border-radius:10px;height:44px}
+audio.ap.v{display:block}
+.et{width:100%;border:.5px solid var(--bd);border-radius:10px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--tx);background:var(--bg);resize:vertical;min-height:60px;outline:none;display:none}
+.et.v{display:block}
+.et:focus{border-color:var(--courses)}
+.pub{display:none;background:var(--courses);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-family:'DM Sans';font-size:14px;font-weight:500;cursor:pointer;width:100%}
+.pub.v{display:block}
+.thk{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--courses)}
+.thk.on{display:flex}
+.spn{width:14px;height:14px;border:1.5px solid var(--courses-bg);border-top-color:var(--courses);border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.st{font-size:12.5px;color:var(--mu);text-align:center;min-height:18px}
+.st.err{color:#993C1D}
+.st.ok{color:var(--courses)}
+.tr{display:flex;gap:8px;width:100%}
+.tr input{flex:1;border:.5px solid #D5CFC9;border-radius:10px;padding:11px 12px;font-family:'DM Sans',sans-serif;font-size:14px;background:var(--bg);color:var(--tx);outline:none}
+.tr input:focus{border-color:var(--courses)}
+.tsb{background:var(--courses-bg);color:var(--courses);border:.5px solid var(--courses-bd);border-radius:10px;padding:11px 16px;font-family:'DM Sans';font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+
+/* ── Categories ── */
+.cs{margin-bottom:.5rem}
+.ch{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);cursor:pointer;-webkit-user-select:none;user-select:none;border:.5px solid transparent;transition:background .12s}
+.ch:active{opacity:.85}
+.cd{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cn{font-size:14px;font-weight:500;flex:1}
+.cc{font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;min-width:24px;text-align:center}
+.caw{font-size:10px;color:var(--mu);transition:transform .2s}
+.caw.o{transform:rotate(90deg)}
+.cb{display:none;padding:0 0 0 20px}
+.cb.o{display:block}
+.sl{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);padding:10px 14px 4px;display:flex;align-items:center;gap:6px}
+.sl::after{content:'';flex:1;height:.5px;background:var(--bdl)}
+.ti{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:.5px solid var(--bdl);animation:si .2s ease}
+@keyframes si{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.ck{width:24px;height:24px;border-radius:50%;border:1.5px solid #D0CCC6;background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:all .15s}
+.ck.d{background:var(--courses);border-color:var(--courses);color:#fff}
+.tt{flex:1;font-size:14.5px;line-height:1.4}
+.tt.d{text-decoration:line-through;color:#BDB7B0}
+.tm{font-size:10.5px;color:#CEC9C3;white-space:nowrap}
+.dl{background:none;border:none;cursor:pointer;color:#D0CCC6;font-size:20px;padding:6px;line-height:1;transition:color .15s}
+.dl:active{color:#993C1D}
+@media(hover:hover){.dl{opacity:0}.ti:hover .dl{opacity:1}}
+.ce{padding:14px;font-size:13px;color:#C5BFB9;font-style:italic}
+
+/* ── Completed ── */
+.dt{background:none;border:none;cursor:pointer;font-family:'DM Sans';font-size:10.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:#BDB7B0;display:none;align-items:center;gap:6px;padding:8px 0;margin-top:.75rem}
+.dt.v{display:flex}
+.dls{display:none;margin-bottom:1rem}
+.dls.o{display:block}
+.dls .ti{background:var(--bg);border-radius:8px;border-bottom:none;margin-bottom:2px}
+
+@media(max-width:480px){
+  body{padding:1rem .65rem calc(1rem + var(--sab))}
+  .iz{padding:1.15rem .9rem;border-radius:16px}
+  .ch{padding:11px 12px}
+  .ti{padding:11px 12px}
+}
+</style>
+</head>
+<body>
+<div class="ctr">
+
+  <div class="top">
+    <div>
+      <div class="day" id="dayL"></div>
+      <h1 id="dateH"></h1>
+      <div class="sum" id="sum"></div>
+      <div class="sync-badge" id="syncBadge" style="display:none">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncTxt">Synced</span>
+      </div>
+    </div>
+    <div class="hdr-btns">
+      <button class="ib" onclick="doSync(true)" title="Sync now">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+      <button class="ib" onclick="togStg()" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="stg" id="stg">
+    <p><strong>Step 1:</strong> Create a GitHub personal access token at <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a> → Classic → check only <strong>gist</strong> scope.</p>
+    <label class="fl">GitHub Token</label>
+    <input type="password" class="fi" id="ghTok" placeholder="ghp_..." />
+
+    <p style="margin-top:14px"><strong>Step 2:</strong> Create a <strong>secret</strong> gist at <a href="https://gist.github.com" target="_blank">gist.github.com</a> with filename <code>tasks.json</code> and content <code>[]</code>. Copy the gist ID from the URL.</p>
+    <label class="fl">Gist ID</label>
+    <input type="text" class="fi" id="ghGist" placeholder="abc123def456..." />
+
+    <p style="margin-top:14px"><strong>Step 3:</strong> Your Anthropic API key for task parsing.</p>
+    <label class="fl">Anthropic API Key</label>
+    <input type="password" class="fi" id="keyIn" placeholder="sk-ant-api03-..." />
+
+    <p style="margin-top:12px;font-size:11px;">All credentials stay in this browser's storage only. Tasks sync privately through your GitHub gist.</p>
+    <button class="sv" onclick="saveKeys()">Save &amp; connect</button>
+  </div>
+
+  <!-- Input zone -->
+  <div class="iz">
+    <div class="br">
+      <div class="mw">
+        <div class="mr" id="ring"></div>
+        <button class="mb" id="micB" onclick="toggleRec()">
+          <svg class="ms" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <svg class="ss" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+      </div>
+      <button class="ub" onclick="$('fIn').click()" title="Upload voice note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </button>
+      <input type="file" id="fIn" accept="audio/*" onchange="handleFile(event)" />
+    </div>
+
+    <div class="ta" id="ta"></div>
+    <audio class="ap" id="ap" controls></audio>
+    <textarea class="et" id="et" placeholder="Type or edit what the voice note says..."></textarea>
+    <button class="pub" id="pub" onclick="procUpload()">Process voice note</button>
+    <div class="thk" id="thk"><div class="spn"></div><span>Sorting your tasks...</span></div>
+    <div class="st" id="st">Tap the mic or upload a voice note</div>
+
+    <div class="tr">
+      <input type="text" id="tIn" placeholder="Or type a command..." onkeydown="if(event.key==='Enter')subText()" />
+      <button class="tsb" onclick="subText()">Send</button>
+    </div>
+  </div>
+
+  <div id="cats"></div>
+
+  <button class="dt" id="dtBtn" onclick="toggleDone()">
+    <span id="dArr">▶</span> Completed (<span id="dCnt">0</span>)
+  </button>
+  <div class="dls" id="dLst"></div>
+
+</div>
+
+<script>
+const CATS=[
+  {k:'Home',c:'var(--home)',bg:'var(--home-bg)',bd:'var(--home-bd)'},
+  {k:'Kids',c:'var(--kids)',bg:'var(--kids-bg)',bd:'var(--kids-bd)'},
+  {k:'Courses',c:'var(--courses)',bg:'var(--courses-bg)',bd:'var(--courses-bd)'},
+  {k:'Research',c:'var(--research)',bg:'var(--research-bg)',bd:'var(--research-bd)'},
+];
+
+let tasks=[],apiKey='',ghToken='',ghGist='',recog=null,isRec=false,openC={},syncing=false;
+
+function init(){
+  apiKey=ls('dtk3')||''; ghToken=ls('dtgh')||''; ghGist=ls('dtgid')||'';
+  if(apiKey)$('keyIn').value=apiKey;
+  if(ghToken)$('ghTok').value=ghToken;
+  if(ghGist)$('ghGist').value=ghGist;
+
+  if(!apiKey||!ghToken||!ghGist){
+    setTimeout(()=>{$('stg').classList.add('open');ss('Set up your keys to get started','');},300);
+  }
+
+  try{tasks=JSON.parse(ls('dtv4'))||[];}catch{tasks=[];}
+  CATS.forEach(c=>openC[c.k]=true);
+
+  renderDate(); renderAll(); initSR();
+
+  if(ghToken&&ghGist) doSync(false);
+}
+
+function ls(k,v){if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}
+function $(id){return document.getElementById(id);}
+
+// ── Sync ──────────────────────────────────────────
+function setSyncUI(state,msg){
+  $('syncBadge').style.display='flex';
+  const dot=$('syncDot');
+  dot.className='sync-dot'+(state?' '+state:'');
+  $('syncTxt').textContent=msg||'';
+}
+
+async function doSync(manual){
+  if(!ghToken||!ghGist){
+    if(manual)ss('Set up GitHub token & gist ID in settings','err');
+    return;
+  }
+  if(syncing)return;
+  syncing=true;
+  setSyncUI('ing','Syncing...');
+
+  try{
+    const res=await fetch(`https://api.github.com/gists/${ghGist}`,{
+      headers:{'Authorization':`token ${ghToken}`,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!res.ok) throw new Error(`GitHub ${res.status}`);
+    const gist=await res.json();
+    const file=gist.files['tasks.json'];
+    if(!file) throw new Error('No tasks.json in gist');
+
+    let remote=[];
+    try{remote=JSON.parse(file.content)||[];}catch{remote=[];}
+
+    // Merge: combine by id, local wins for conflicts (last-edit approach)
+    const merged=mergeTasks(tasks,remote);
+    tasks=merged;
+    ls('dtv4',JSON.stringify(tasks));
+
+    // Push merged back
+    await fetch(`https://api.github.com/gists/${ghGist}`,{
+      method:'PATCH',
+      headers:{'Authorization':`token ${ghToken}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+      body:JSON.stringify({files:{'tasks.json':{content:JSON.stringify(tasks,null,2)}}})
+    });
+
+    renderAll();
+    const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    setSyncUI('ok',`Synced ${now}`);
+    if(manual)ss('Synced!','ok');
+
+  }catch(err){
+    setSyncUI('err','Sync failed');
+    if(manual)ss('Sync error: '+err.message,'err');
+    console.error('Sync error:',err);
+  }finally{
+    syncing=false;
+  }
+}
+
+function mergeTasks(local,remote){
+  const map=new Map();
+  // Remote first so local overwrites
+  for(const t of remote) map.set(t.id,t);
+  for(const t of local) map.set(t.id,{...map.get(t.id),...t,updatedAt:t.updatedAt||t.createdAt||''});
+  return Array.from(map.values());
+}
+
+async function saveAndSync(){
+  ls('dtv4',JSON.stringify(tasks));
+  renderAll();
+  // Non-blocking push
+  if(ghToken&&ghGist){
+    setSyncUI('ing','Saving...');
+    try{
+      await fetch(`https://api.github.com/gists/${ghGist}`,{
+        method:'PATCH',
+        headers:{'Authorization':`token ${ghToken}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+        body:JSON.stringify({files:{'tasks.json':{content:JSON.stringify(tasks,null,2)}}})
+      });
+      const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      setSyncUI('ok',`Synced ${now}`);
+    }catch(err){
+      setSyncUI('err','Save failed — will retry');
+      console.error('Push error:',err);
+    }
+  }
+}
+
+// ── Render ─────────────────────────────────────────
+function renderDate(){
+  const d=new Date();
+  const ds=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const ms=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('dayL').textContent=ds[d.getDay()];
+  $('dateH').textContent=`${ms[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function renderAll(){
+  const act=tasks.filter(t=>!t.done),dn=tasks.filter(t=>t.done);
+  const n=act.length;
+  $('sum').textContent=n===0&&dn.length===0?'Nothing on the list yet':n===0?'All clear — nice work!':`${n} task${n!==1?'s':''} remaining`;
+
+  let h='';
+  for(const cat of CATS){
+    const ct=act.filter(t=>t.category===cat.k);
+    const subs={};
+    ct.forEach(t=>{const s=t.subcategory||'General';(subs[s]=subs[s]||[]).push(t);});
+    const sk=Object.keys(subs).sort((a,b)=>a==='General'?1:b==='General'?-1:a.localeCompare(b));
+    const op=openC[cat.k];
+
+    h+=`<div class="cs">
+      <div class="ch" style="background:${cat.bg};border-color:${ct.length?cat.bd:'transparent'}" onclick="togC('${cat.k}')">
+        <div class="cd" style="background:${cat.c}"></div>
+        <span class="cn" style="color:${cat.c}">${cat.k}</span>
+        <span class="cc" style="background:${ct.length?cat.bd:cat.bg};color:${cat.c}">${ct.length}</span>
+        <span class="caw ${op?'o':''}">▶</span>
+      </div>
+      <div class="cb ${op?'o':''}">`;
+
+    if(!ct.length){h+=`<div class="ce">No tasks</div>`;}
+    else{
+      for(const s of sk){
+        if(sk.length>1||s!=='General') h+=`<div class="sl">${esc(s)}</div>`;
+        for(const t of subs[s]) h+=mkTask(t);
+      }
+    }
+    h+=`</div></div>`;
+  }
+  $('cats').innerHTML=h;
+
+  if(dn.length){
+    $('dtBtn').classList.add('v');$('dCnt').textContent=dn.length;
+    $('dLst').innerHTML=dn.map(t=>{
+      const co=CATS.find(c=>c.k===t.category);
+      return `<div class="ti">
+        <button class="ck d" onclick="togT('${t.id}')">✓</button>
+        <span class="tt d">${esc(t.text)}</span>
+        <span class="tm" style="color:${co?co.c:'var(--mu)'}">${t.category||''}</span>
+        <button class="dl" onclick="delT('${t.id}')">×</button>
+      </div>`;
+    }).join('');
+  }else{
+    $('dtBtn').classList.remove('v');$('dLst').classList.remove('o');$('dArr').textContent='▶';
+  }
+}
+
+function mkTask(t){
+  const tm=t.createdAt?new Date(t.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+  return `<div class="ti">
+    <button class="ck" onclick="togT('${t.id}')">✓</button>
+    <span class="tt">${esc(t.text)}</span>
+    <span class="tm">${tm}</span>
+    <button class="dl" onclick="delT('${t.id}')">×</button>
+  </div>`;
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+
+// ── Task ops ──────────────────────────────────────
+function togT(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;t.updatedAt=new Date().toISOString();saveAndSync();}}
+function delT(id){tasks=tasks.filter(x=>x.id!==id);saveAndSync();}
+function togC(k){openC[k]=!openC[k];renderAll();}
+function toggleDone(){$('dLst').classList.toggle('o');$('dArr').textContent=$('dLst').classList.contains('o')?'▼':'▶';}
+
+// ── Settings ──────────────────────────────────────
+function togStg(){$('stg').classList.toggle('open');}
+function saveKeys(){
+  const t=$('ghTok').value.trim(),g=$('ghGist').value.trim(),a=$('keyIn').value.trim();
+  if(!t||!g||!a){ss('Please fill in all three fields','err');return;}
+  ghToken=t;ghGist=g;apiKey=a;
+  ls('dtgh',t);ls('dtgid',g);ls('dtk3',a);
+  $('stg').classList.remove('open');
+  ss('Saved! Pulling your tasks...','ok');
+  doSync(true);
+}
+
+// ── Speech ────────────────────────────────────────
+function initSR(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return;
+  recog=new SR();recog.continuous=false;recog.interimResults=true;recog.lang='en-US';
+  let fin='';
+  recog.onstart=()=>{fin='';showTA('');};
+  recog.onresult=(e)=>{let i='';fin='';for(const r of e.results){if(r.isFinal)fin+=r[0].transcript;else i+=r[0].transcript;}showTA(fin||i);};
+  recog.onend=()=>{if(!isRec)return;isRec=false;recUI(false);if(fin.trim())procCmd(fin.trim());else ss("Didn't catch that — try again",'');};
+  recog.onerror=(e)=>{isRec=false;recUI(false);ss('Mic error: '+e.error,'err');};
+}
+
+function toggleRec(){
+  if(!recog){ss('Voice not supported — type below','');return;}
+  if(!apiKey){$('stg').classList.add('open');ss('Set your keys first','err');return;}
+  if(isRec){recog.stop();isRec=false;recUI(false);}else{isRec=true;recUI(true);ss('Listening...');recog.start();}
+}
+function recUI(on){$('micB').classList.toggle('rec',on);$('ring').classList.toggle('on',on);if(!on)$('ta').classList.remove('v');}
+function showTA(t){const e=$('ta');e.textContent=t||'...';e.classList.add('v');}
+
+// ── File upload ───────────────────────────────────
+function handleFile(e){
+  const f=e.target.files[0];if(!f)return;
+  if(!apiKey){$('stg').classList.add('open');ss('Set your keys first','err');return;}
+  $('ap').src=URL.createObjectURL(f);$('ap').classList.add('v');
+  $('et').classList.add('v');$('et').value='';
+  $('et').placeholder='Listen and type what the voice note says...';
+  $('pub').classList.add('v');
+  ss('Play your recording, then type the transcript','');
+  e.target.value='';
+}
+function procUpload(){
+  const t=$('et').value.trim();
+  if(!t){ss('Type what the voice note says first','err');return;}
+  $('ap').classList.remove('v');$('ap').pause();$('et').classList.remove('v');$('pub').classList.remove('v');
+  procCmd(t);
+}
+
+// ── Text input ────────────────────────────────────
+function subText(){
+  const v=$('tIn').value.trim();if(!v)return;
+  if(!apiKey){$('stg').classList.add('open');ss('Set keys first','err');return;}
+  $('tIn').value='';procCmd(v);
+}
+
+// ── Claude API ────────────────────────────────────
+async function procCmd(cmd){
+  ss('','');$('thk').classList.add('on');
+
+  const tl=tasks.map(t=>({id:t.id,text:t.text,done:t.done,category:t.category,subcategory:t.subcategory}));
+
+  const sys=`You are a smart daily task list assistant. Tasks belong to one of four categories: Home, Kids, Courses, Research. Each task can also have a subcategory (a short label).
+
+Interpret the user's command and return ONLY a valid JSON array. No prose, no markdown fences.
+
+Action shapes:
+  {"action":"add","text":"task","category":"Home|Kids|Courses|Research","subcategory":"label or null"}
+  {"action":"complete","id":"<id>"}
+  {"action":"uncomplete","id":"<id>"}
+  {"action":"delete","id":"<id>"}
+  {"action":"clear_completed"}
+  {"action":"message","text":"short reply"}
+
+Rules:
+- One command can produce multiple actions.
+- Match existing tasks by meaning — generous fuzzy matching.
+- Capitalize first letter of task text and subcategory.
+- Infer category from context. Examples: "pick up Santiago","Santiago's soccer" → Kids; "grade exams","post grades","update syllabus" → Courses; "submit manuscript","run analysis","email collaborator about data" → Research; "buy groceries","fix dishwasher","pay bills" → Home.
+- Reuse existing subcategories when possible. Good examples: "Histology","Dev Bio","Cancer Bio","Bio Seminar","Santiago","BRCA project","Grocery","Cleaning","Bills".
+- For completing/uncompleting, match by meaning even across completed/active tasks.
+- Return [{"action":"message","text":"..."}] if unclear.
+
+Current tasks:
+${JSON.stringify(tl,null,1)}`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-ipc':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,system:sys,messages:[{role:'user',content:`Command: "${cmd}"`}]})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
+    const raw=(data.content?.find(b=>b.type==='text')?.text||'[]').replace(/```json|```/g,'').trim();
+    applyActs(JSON.parse(raw));
+  }catch(err){
+    ss('Error: '+err.message,'err');
+  }finally{
+    $('thk').classList.remove('on');
+  }
+}
+
+function applyActs(acts){
+  const msgs=[];
+  const now=new Date().toISOString();
+  for(const a of acts){
+    if(a.action==='add'&&a.text){
+      const cat=CATS.find(c=>c.k===a.category)?a.category:'Home';
+      tasks.push({id:uid(),text:a.text,category:cat,subcategory:a.subcategory||null,done:false,createdAt:now,updatedAt:now});
+    }else if(a.action==='complete'){
+      const t=tasks.find(x=>x.id===a.id);if(t){t.done=true;t.updatedAt=now;}
+    }else if(a.action==='uncomplete'){
+      const t=tasks.find(x=>x.id===a.id);if(t){t.done=false;t.updatedAt=now;}
+    }else if(a.action==='delete'){
+      tasks=tasks.filter(x=>x.id!==a.id);
+    }else if(a.action==='clear_completed'){
+      tasks=tasks.filter(x=>!x.done);
+    }else if(a.action==='message'&&a.text){
+      msgs.push(a.text);
+    }
+  }
+  saveAndSync();
+  if(msgs.length)ss(msgs.join(' '),'ok');
+  else{ss('Updated!','ok');setTimeout(()=>ss('Tap the mic or upload a voice note',''),2000);}
+}
+
+function ss(m,t=''){const e=$('st');e.textContent=m;e.className='st'+(t?' '+t:'');}
+
+// ── Auto-sync on focus (when switching back to tab/app) ──
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&ghToken&&ghGist) doSync(false);
+});
+
+init();
+</script>
+</body>
+</html>
